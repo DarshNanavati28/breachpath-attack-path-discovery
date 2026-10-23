@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b1020">
+<title>BreachPath — Attack-path discovery</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1020;--panel:#11182a;--panel2:#151f34;--line:#27334b;--muted:#94a3b8;--text:#edf4ff;--cyan:#5de0da;--green:#8ce6b0;--amber:#ffca7a;--red:#ff858d;--purple:#b7a2ff;--shadow:0 18px 50px rgba(0,0,0,.23)}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% -20%,#1c2b47 0,transparent 44%),var(--bg);color:var(--text);font:14px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;min-width:320px}button,input,select,textarea{font:inherit}button{cursor:pointer}.app{max-width:1500px;margin:0 auto;padding:0 28px 44px}.topbar{height:68px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(148,163,184,.15)}.brand{display:flex;align-items:center;gap:11px;font-weight:700;letter-spacing:.01em}.brandmark{width:32px;height:32px;display:grid;place-items:center;border:1px solid #3e6576;border-radius:10px;background:linear-gradient(145deg,#153748,#112235);color:var(--cyan)}.brandmark svg{width:19px;height:19px}.brand-name{font-size:15px}.brand-name span{font-weight:400;color:#8da0b9}.top-actions{display:flex;gap:9px;align-items:center}.pill{border:1px solid var(--line);border-radius:999px;padding:6px 10px;color:#bdc9db;font-size:11px;letter-spacing:.04em;text-transform:uppercase}.offline{display:inline-flex;align-items:center;gap:7px;color:#a9b7cb;font-size:12px}.dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 11px #75e1a3}
+button{border:1px solid var(--line);border-radius:8px;background:#172137;color:var(--text);padding:8px 12px;transition:.16s ease}button:hover{border-color:#5f7899;background:#1b2942}button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}.btn-primary{background:var(--cyan);border-color:var(--cyan);color:#07151d;font-weight:700}.btn-primary:hover{background:#8df2e9;border-color:#8df2e9}.btn-quiet{background:transparent}.btn-small{padding:6px 9px;font-size:12px}.btn-danger{color:#ffc0c3}.icon-btn{padding:4px 8px;background:transparent;color:#91a0b6}
+.hero{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;padding:29px 0 20px}.eyebrow{font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:var(--cyan);font-weight:700;margin-bottom:7px}.hero h1{margin:0;font-size:clamp(25px,3vw,36px);letter-spacing:-.04em;line-height:1.15;font-weight:650}.hero p{margin:9px 0 0;color:#9aabc3;max-width:700px}.hero-right{display:flex;gap:8px;align-items:center;flex-shrink:0}.sample-tag{border:1px solid #59638d;background:#262747;color:#d6cfff;border-radius:7px;padding:7px 10px;font-size:11px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:2px 0 18px}.stat{border:1px solid var(--line);background:rgba(17,24,42,.78);border-radius:10px;padding:12px 15px;display:flex;align-items:center;justify-content:space-between}.stat-label{font-size:11px;color:#9aabc3;text-transform:uppercase;letter-spacing:.08em}.stat-value{font-size:21px;font-weight:650;letter-spacing:-.03em}.stat-value.cyan{color:var(--cyan)}.stat-value.green{color:var(--green)}.stat-value.amber{color:var(--amber)}
+.workspace{display:grid;grid-template-columns:minmax(280px, .92fr) minmax(380px,1.35fr) minmax(275px,.82fr);gap:14px;align-items:start}.panel{border:1px solid var(--line);border-radius:12px;background:linear-gradient(180deg,rgba(19,27,46,.96),rgba(15,22,38,.96));box-shadow:var(--shadow);overflow:hidden}.panel-head{padding:15px 16px 13px;border-bottom:1px solid rgba(148,163,184,.13);display:flex;justify-content:space-between;align-items:center;gap:10px}.panel-title{font-size:13px;font-weight:700;display:flex;align-items:center;gap:9px}.panel-title .num{font-size:10px;color:var(--cyan);letter-spacing:.08em}.panel-sub{color:#8293ad;font-size:11px;margin-top:3px}.panel-body{padding:14px 15px}.section-label{font-size:10px;color:#8fa0b8;text-transform:uppercase;letter-spacing:.11em;font-weight:700;margin:0 0 9px}.divider{height:1px;background:rgba(148,163,184,.13);margin:16px 0}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.field{display:flex;flex-direction:column;gap:5px;min-width:0}.field.wide{grid-column:1/-1}.field label{font-size:11px;color:#a7b5c9}.field input,.field select{min-width:0;width:100%;border:1px solid #303d55;background:#0d1424;color:#eaf2ff;border-radius:7px;padding:8px 9px;font-size:12px}.field input::placeholder{color:#62718a}.checks{display:flex;gap:16px;flex-wrap:wrap;margin:9px 0 10px}.check{display:inline-flex;gap:7px;align-items:center;font-size:11px;color:#b7c4d7}.check input{accent-color:#65dfd6}.form-actions{display:flex;justify-content:flex-end;margin-top:8px}.form-actions button{font-size:11px;padding:7px 10px}
+.node-list,.edge-list{display:flex;flex-direction:column;gap:6px}.node-row,.edge-row{display:flex;align-items:center;gap:8px;padding:8px 9px;border:1px solid rgba(80,98,126,.44);background:rgba(11,17,31,.58);border-radius:8px;min-width:0}.node-icon{width:25px;height:25px;border-radius:7px;display:grid;place-items:center;flex-shrink:0;font-size:11px;font-weight:750;background:#202e47;color:#9cb5dc}.node-icon.user{color:#86d5ff;background:#183346}.node-icon.service{color:#68dfd1;background:#153b3c}.node-icon.role{color:#d2adff;background:#322848}.node-icon.permission{color:#ffd18b;background:#403221}.node-icon.asset{color:#ff9fa7;background:#462832}.node-main,.edge-main{min-width:0;flex:1}.node-name,.edge-title{font-size:11px;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;font-weight:600}.node-meta,.edge-meta{font-size:10px;color:#7f91aa;margin-top:2px}.node-flags{display:flex;align-items:center;gap:6px;flex-shrink:0}.tiny-flag{font-size:9px;text-transform:uppercase;letter-spacing:.04em;border-radius:999px;padding:3px 6px;background:#1c2e37;color:#8de5d3}.tiny-flag.sensitive{background:#3e2930;color:#ffabb0}.empty{font-size:11px;color:#788aa3;padding:10px;border:1px dashed #35425a;border-radius:8px;text-align:center}.edge-row{align-items:flex-start}.edge-arrow{color:#54718c;font-size:12px;flex-shrink:0;padding-top:2px}.edge-delete{border:0;padding:2px 5px;color:#8191a7;background:transparent;font-size:15px}.edge-delete:hover{color:var(--red);background:transparent}
+.analysis-panel .panel-head{align-items:flex-start}.analysis-controls{display:flex;gap:8px;align-items:center}.analysis-controls label{font-size:10px;color:#96a7c0}.analysis-controls select{border:1px solid #34435b;background:#0d1424;color:#e9f1ff;border-radius:7px;padding:6px 7px;font-size:11px}.route-count{display:flex;align-items:center;justify-content:space-between;border:1px solid #29374d;border-radius:9px;padding:10px 12px;margin-bottom:12px;background:#0d1424}.route-count strong{font-size:20px;color:var(--cyan)}.route-count span{font-size:11px;color:#9eacc0}.routes{display:flex;flex-direction:column;gap:9px}.route-card{border:1px solid #2d3b53;background:rgba(11,17,31,.66);border-radius:10px;overflow:hidden}.route-card-head{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid rgba(107,126,153,.17)}.route-name{font-size:12px;font-weight:650}.route-index{font-size:10px;color:#7e91ac}.hop-pill{font-size:10px;border:1px solid #334761;color:#a8bbd4;border-radius:999px;padding:3px 7px}.route-flow{padding:11px 12px 12px}.route-step{display:grid;grid-template-columns:24px 1fr;gap:8px;position:relative;padding-bottom:9px}.route-step:last-child{padding-bottom:0}.route-step:not(:last-child):before{content:"";position:absolute;left:11px;top:22px;bottom:-1px;width:1px;background:#3c536c}.step-node{width:23px;height:23px;border-radius:7px;display:grid;place-items:center;font-size:9px;background:#1c2c3d;color:#a6bdd6;z-index:1}.step-node.entry{background:#16403c;color:#88edcf}.step-node.target{background:#492c37;color:#ffabb1}.step-content{min-width:0;padding-top:1px}.step-title{font-size:11px;font-weight:600}.step-detail{font-size:10px;color:#91a1b8;margin-top:2px}.step-detail b{color:#c4d2e4;font-weight:600}.no-routes{padding:30px 18px;text-align:center;border:1px dashed #34425a;border-radius:10px}.no-routes .glyph{font-size:20px;color:#657993;margin-bottom:5px}.no-routes strong{display:block;font-size:12px}.no-routes p{font-size:11px;color:#8798b0;margin:5px auto 0;max-width:280px}
+.delta-box{border:1px solid #47553d;background:linear-gradient(135deg,rgba(34,51,43,.6),rgba(23,37,40,.45));border-radius:10px;padding:11px 12px;margin-bottom:13px}.delta-head{display:flex;justify-content:space-between;gap:8px;align-items:center}.delta-title{font-size:11px;font-weight:700;color:#d6eedb}.delta-label{font-size:10px;color:#9baec0}.delta-counts{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}.delta-count{font-size:10px;padding:4px 7px;border-radius:5px;background:#182638;color:#c5d0df}.delta-count.removed{color:#ff9ca2;background:#38252d}.delta-count.remain{color:#a9c4e5;background:#202b3c}.delta-count.new{color:#8de5b1;background:#20352e}.delta-group{margin-top:8px;border-top:1px solid rgba(148,163,184,.15);padding-top:7px}.delta-group summary{cursor:pointer;font-size:10px;color:#aebbd0}.delta-items{margin:7px 0 0;padding-left:16px;color:#c6d0de;font-size:10px}.delta-items li{margin:5px 0}.delta-items .mini-path{color:#8295af}
+.right-panel .panel-body{padding:14px}.suggest-intro{font-size:11px;color:#92a3bb;line-height:1.5;margin:0 0 12px}.suggestion{border:1px solid #334052;background:#111b2b;border-radius:9px;padding:10px;margin-bottom:8px}.suggestion-top{display:flex;justify-content:space-between;gap:8px;align-items:center}.suggestion-edge{font-size:11px;font-weight:650}.impact{color:#ffcf88;font-size:10px;white-space:nowrap}.suggestion-meta{font-size:10px;color:#8b9cb2;margin-top:4px}.suggestion .btn-small{width:100%;margin-top:9px;font-size:10px}.suggestion .btn-small:disabled{opacity:.45;cursor:not-allowed}.suggest-empty{border:1px dashed #34425a;border-radius:9px;text-align:center;padding:17px 12px;color:#91a0b5;font-size:11px}
+.helper{margin-top:12px;border-top:1px solid rgba(148,163,184,.13);padding-top:11px;color:#7f90a7;font-size:10px;line-height:1.55}.helper strong{color:#a8b8cc}.notice{display:none;margin:0 0 12px;border:1px solid #6b3c43;background:#321d27;color:#ffc0c0;padding:9px 11px;border-radius:8px;font-size:11px}.notice.show{display:block}.toast{position:fixed;right:22px;bottom:20px;z-index:5;background:#dff8ef;color:#10211b;padding:10px 14px;border-radius:9px;box-shadow:0 10px 30px #0008;font-size:12px;font-weight:600;opacity:0;transform:translateY(10px);transition:.2s;pointer-events:none}.toast.show{opacity:1;transform:translateY(0)}.modal-backdrop{position:fixed;inset:0;background:#040813cc;z-index:10;display:none;align-items:center;justify-content:center;padding:20px}.modal-backdrop.open{display:flex}.modal{width:min(600px,100%);max-height:85vh;overflow:auto;border:1px solid #3c4c65;background:#111a2c;border-radius:12px;box-shadow:var(--shadow)}.modal-head{padding:15px 17px;border-bottom:1px solid #29364c;display:flex;justify-content:space-between;align-items:center}.modal-head strong{font-size:13px}.modal-body{padding:16px 18px}.modal-body p{font-size:11px;color:#aab7c8}.modal-body pre{white-space:pre-wrap;overflow-wrap:anywhere;font:10px/1.5 ui-monospace,Consolas,monospace;background:#0a1120;border:1px solid #29364c;border-radius:8px;padding:12px;color:#cbd8e9}.modal-actions{display:flex;gap:8px;justify-content:flex-end;padding:0 18px 16px}.footer{padding:17px 2px;color:#62748f;font-size:10px;display:flex;justify-content:space-between;gap:10px}.footer span:last-child{color:#74859e}
+@media(max-width:1120px){.workspace{grid-template-columns:minmax(270px,.85fr) minmax(390px,1.2fr)}.right-panel{grid-column:1/-1}.right-panel .panel-body{display:grid;grid-template-columns:1fr 1fr;gap:10px}.right-panel .panel-head{grid-column:1/-1}.suggest-intro{grid-column:1/-1}.suggestions{grid-column:1}.helper{grid-column:2;margin-top:0;border-top:0;padding-top:0}.suggest-empty{grid-column:1}}
+@media(max-width:760px){.app{padding:0 14px 30px}.topbar{height:58px}.hero{align-items:flex-start;flex-direction:column;padding:23px 0 17px}.hero-right{align-self:stretch;justify-content:space-between}.stats{grid-template-columns:1fr 1fr;gap:7px}.stat{padding:10px 11px}.stat-value{font-size:18px}.workspace{grid-template-columns:1fr}.right-panel{grid-column:auto}.right-panel .panel-body{display:block}.helper{margin-top:12px;border-top:1px solid rgba(148,163,184,.13);padding-top:11px}.analysis-panel{grid-row:1}.builder-panel{grid-row:2}.right-panel{grid-row:3}.panel-head{padding:13px}.panel-body{padding:12px}.footer{flex-direction:column}.pill{display:none}}
+@media(max-width:420px){.analysis-panel .panel-head{flex-direction:column;align-items:stretch}.analysis-controls{justify-content:space-between}.form-grid{grid-template-columns:1fr}.field.wide{grid-column:auto}.node-flags{gap:3px}.tiny-flag{font-size:8px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand"><div class="brandmark" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2.8 20 6v5.4c0 5.1-3.4 8.5-8 10-4.6-1.5-8-4.9-8-10V6l8-3.2Z" stroke="currentColor" stroke-width="1.5"/><path d="M8.2 12.2 10.7 14.5 16 9.4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="brand-name">BreachPath <span>/ attack-path discovery</span></div></div>
+    <div class="top-actions"><span class="offline"><i class="dot"></i> Local analysis</span><span class="pill">C-02 · Cybersecurity &amp; digital trust</span></div>
+  </header>
+  <section class="hero">
+    <div><div class="eyebrow">Exposure analysis</div><h1>Find the route to sensitive data.</h1><p>Map identities, services, permissions and trust links. BreachPath follows only relationships in your model, then shows what changes when you remove one.</p></div>
+    <div class="hero-right"><span class="sample-tag" id="modelBadge">CURRENT MODEL</span><button class="btn-small" id="loadDemoBtn">Load demo</button><button class="btn-small btn-quiet" id="newModelBtn">New blank model</button><button class="btn-small" id="templateBtn">JSON format</button></div>
+  </section>
+  <section class="stats" aria-label="Model summary">
+    <div class="stat"><span class="stat-label">Elements</span><span class="stat-value" id="statNodes">0</span></div>
+    <div class="stat"><span class="stat-label">Relationships</span><span class="stat-value cyan" id="statEdges">0</span></div>
+    <div class="stat"><span class="stat-label">Entry points</span><span class="stat-value amber" id="statEntries">0</span></div>
+    <div class="stat"><span class="stat-label">Sensitive assets</span><span class="stat-value green" id="statAssets">0</span></div>
+  </section>
+  <main class="workspace">
+    <section class="panel builder-panel">
+      <div class="panel-head"><div><div class="panel-title"><span class="num">01</span> Model builder</div><div class="panel-sub">Add only the elements and links you know</div></div><div style="display:flex;gap:6px"><button class="btn-small" id="importBtn">Import JSON</button><button class="btn-small" id="exportBtn">Export</button><input type="file" id="fileInput" accept=".json,application/json" hidden></div></div>
+      <div class="panel-body">
+        <p class="notice" id="notice" role="alert"></p>
+        <div class="section-label">Add an element</div>
+        <form id="nodeForm">
+          <div class="form-grid">
+            <div class="field"><label for="nodeName">Element name</label><input id="nodeName" required maxlength="80" placeholder="e.g. Customer API"></div>
+            <div class="field"><label for="nodeType">Kind</label><select id="nodeType"><option value="user">User</option><option value="service">Service</option><option value="role">Role</option><option value="permission">Permission</option><option value="asset">Sensitive asset</option></select></div>
+          </div>
+          <div class="checks"><label class="check"><input type="checkbox" id="nodeEntry"> Entry point</label><label class="check"><input type="checkbox" id="nodeSensitive"> Sensitive asset</label></div>
+          <div class="form-actions"><button class="btn-primary" type="submit">Add element <span aria-hidden="true">＋</span></button></div>
+        </form>
+        <div class="divider"></div>
+        <div class="section-label">Model elements <span id="nodeCountLabel"></span></div>
+        <div class="node-list" id="nodeList"></div>
+        <div class="divider"></div>
+        <div class="section-label">Add a relationship</div>
+        <form id="edgeForm">
+          <div class="form-grid">
+            <div class="field"><label for="edgeFrom">From</label><select id="edgeFrom" required></select></div>
+            <div class="field"><label for="edgeTo">To</label><select id="edgeTo" required></select></div>
+            <div class="field wide"><label for="edgeType">Relationship type</label><input id="edgeType" list="relationTypes" maxlength="60" required placeholder="e.g. assumes role"><datalist id="relationTypes"><option value="authenticates to"><option value="reachable through"><option value="routes traffic to"><option value="assumes role"><option value="grants"><option value="has permission"><option value="can read"><option value="trusts"><option value="member of"><option value="connects to"><option value="runs"></datalist></div>
+            <div class="field wide"><label for="edgeExplanation">Plain-language detail <span style="color:#71829a">(optional)</span></label><input id="edgeExplanation" maxlength="140" placeholder="e.g. API uses this role to query records"></div>
+          </div>
+          <div class="form-actions"><button class="btn-primary" type="submit">Add relationship <span aria-hidden="true">＋</span></button></div>
+        </form>
+        <div class="divider"></div>
+        <div class="section-label">Relationships <span id="edgeCountLabel"></span></div>
+        <div class="edge-list" id="edgeList"></div>
+        <div class="helper"><strong>Directed links:</strong> a relationship runs from its “From” element to its “To” element. Cycles are allowed; repeated elements are skipped during path search.</div>
+      </div>
+    </section>
+    <section class="panel analysis-panel">
+      <div class="panel-head"><div><div class="panel-title"><span class="num">02</span> Attack paths</div><div class="panel-sub">Entry point → sensitive asset, using directed links</div></div><div class="analysis-controls"><label for="maxHops">Max steps</label><select id="maxHops" aria-label="Maximum path length"></select><button class="btn-small" id="analyzeBtn">Analyze</button></div></div>
+      <div class="panel-body">
+        <div id="deltaSlot"></div>
+        <div class="route-count"><span>Routes found within the selected length</span><strong id="routeCount">0</strong></div>
+        <div class="routes" id="routeList"></div>
+      </div>
+    </section>
+    <aside class="panel right-panel">
+      <div class="panel-head"><div><div class="panel-title"><span class="num">03</span> Remediation</div><div class="panel-sub">Break a route by changing an existing link</div></div></div>
+      <div class="panel-body">
+        <p class="suggest-intro">Suggestions target relationships used by current routes. Review each link, then choose whether to remove it.</p>
+        <div class="suggestions" id="suggestions"></div>
+        <div class="helper"><strong>After each change:</strong> BreachPath re-runs the analysis and lists removed, remaining and new routes. No suggestion is applied until you select it.</div>
+      </div>
+    </aside>
+  </main>
+  <footer class="footer"><span>Analysis runs in this browser. Your model is not uploaded.</span><span>Path search is bounded by max steps and avoids revisiting an element.</span></footer>
+</div>
+<div class="toast" id="toast" role="status"></div>
+<div class="modal-backdrop" id="formatModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+  <div class="modal"><div class="modal-head"><strong id="modalTitle">Import file format</strong><button class="icon-btn" id="closeModal" aria-label="Close">×</button></div><div class="modal-body"><p>Use a JSON file with an explicit node list and directed relationships. Every relationship endpoint must match a node ID. Save as UTF-8 with a <code>.json</code> extension.</p><pre id="schemaExample"></pre><p>Node kinds: <b>user</b>, <b>service</b>, <b>role</b>, <b>permission</b>, or <b>asset</b>. Set <code>entry</code> and <code>sensitive</code> to true or false. Sensitive elements must use kind <code>asset</code>. A relationship can include an optional plain-language <code>explanation</code>.</p><p>Import replaces the current model only when the whole file is valid. The current and imported models are compared after a successful import.</p></div><div class="modal-actions"><button id="downloadTemplate">Download starter JSON</button><button class="btn-primary" id="closeModal2">Done</button></div></div>
+</div>
+<script>
+(function(){
+"use strict";
+var NODE_TYPES=["user","service","role","permission","asset"];
+var TYPE_LABEL={user:"User",service:"Service",role:"Role",permission:"Permission",asset:"Asset"};
+var MAX_NODES=80,MAX_EDGES=250,MAX_ROUTES=10000,MAX_EXPANSIONS=250000;
+var model={nodes:[],relationships:[]},routes=[],maxHops=5,lastDelta=null,demoMode=true,toastTimer=null;
+var $=function(id){return document.getElementById(id)};
+var schemaModel={nodes:[{id:"internet-user",name:"Internet user",type:"user",entry:true,sensitive:false},{id:"public-portal",name:"Public portal",type:"service",entry:false,sensitive:false},{id:"customer-api",name:"Customer API",type:"service",entry:false,sensitive:false},{id:"app-role",name:"Application role",type:"role",entry:false,sensitive:false},{id:"read-permission",name:"Customer record read",type:"permission",entry:false,sensitive:false},{id:"customer-db",name:"Customer database",type:"asset",entry:false,sensitive:true},{id:"support-user",name:"Partner support user",type:"user",entry:true,sensitive:false},{id:"support-console",name:"Support console",type:"service",entry:false,sensitive:false},{id:"support-role",name:"Support role",type:"role",entry:false,sensitive:false}],relationships:[{id:"r-01",from:"internet-user",to:"public-portal",type:"authenticates to",explanation:"An outside user can sign in to the public portal."},{id:"r-02",from:"public-portal",to:"customer-api",type:"routes traffic to",explanation:"The portal forwards requests to the customer API."},{id:"r-03",from:"customer-api",to:"app-role",type:"assumes role",explanation:"The API runs with the application role."},{id:"r-04",from:"app-role",to:"read-permission",type:"has permission",explanation:"The role is granted record-read access."},{id:"r-05",from:"read-permission",to:"customer-db",type:"can read",explanation:"This permission allows reads from the database."},{id:"r-06",from:"support-user",to:"support-console",type:"authenticates to",explanation:"The support user can sign in to the console."},{id:"r-07",from:"support-console",to:"support-role",type:"assumes role",explanation:"The console can use the support role."},{id:"r-08",from:"support-role",to:"read-permission",type:"trusts",explanation:"The support role trusts the read permission."},{id:"r-09",from:"customer-api",to:"customer-db",type:"connects to",explanation:"The API has a direct database connection."}]};
+function clone(value){return JSON.parse(JSON.stringify(value))}
+function esc(value){return String(value).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function uid(prefix){return prefix+"-"+Math.random().toString(36).slice(2,8)+"-"+Date.now().toString(36).slice(-4)}
+function setNotice(message){var el=$("notice");if(message){el.textContent=message;el.classList.add("show")}else{el.textContent="";el.classList.remove("show")}}
+function showToast(message){var el=$("toast");el.textContent=message;el.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(function(){el.classList.remove("show")},2600)}
+function routeSignature(route){return route.nodes.map(function(n){return n.id}).join(">")+"|"+route.edges.map(function(e){return e.id+":"+e.type}).join(">")}
+function routeDescription(route){return route.nodes[0].name+" → "+route.nodes[route.nodes.length-1].name}
+function analyze(source,depth){
+  var byId=new Map(),adj=new Map(),entries=[],targets=0,expanded=0,found=[];
+  source.nodes.forEach(function(n){byId.set(n.id,n);adj.set(n.id,[]);if(n.entry)entries.push(n);if(n.sensitive)targets++});
+  source.relationships.forEach(function(e){if(adj.has(e.from))adj.get(e.from).push(e)});
+  entries.forEach(function(start){
+    var seen=new Set([start.id]);
+    function visit(current,nodePath,edgePath){
+      if(current.sensitive){found.push({nodes:nodePath.slice(),edges:edgePath.slice()});if(found.length>MAX_ROUTES)throw Error("This model produces more than "+MAX_ROUTES.toLocaleString()+" routes. Lower the maximum path length or simplify the model, then analyze again.");return}
+      if(edgePath.length>=depth)return;
+      var outgoing=adj.get(current.id)||[];
+      for(var i=0;i<outgoing.length;i++){
+        expanded++;if(expanded>MAX_EXPANSIONS)throw Error("This model exceeds the safe search limit of "+MAX_EXPANSIONS.toLocaleString()+" link checks. Lower the maximum path length or simplify the model, then analyze again.");
+        var edge=outgoing[i];if(seen.has(edge.to))continue;
+        var next=byId.get(edge.to);if(!next)continue;
+        seen.add(next.id);nodePath.push(next);edgePath.push(edge);
+        visit(next,nodePath,edgePath);
+        edgePath.pop();nodePath.pop();seen.delete(next.id);
+      }
+    }
+    visit(start,[start],[]);
+  });
+  return found;
+}
+function diffRoutes(before,after){
+  var beforeMap=new Map(),afterMap=new Map();before.forEach(function(r){beforeMap.set(routeSignature(r),r)});after.forEach(function(r){afterMap.set(routeSignature(r),r)});
+  return {removed:before.filter(function(r){return !afterMap.has(routeSignature(r))}),remaining:after.filter(function(r){return beforeMap.has(routeSignature(r))}),added:after.filter(function(r){return !beforeMap.has(routeSignature(r))})};
+}
+function transact(label,mutator){
+  var priorModel=clone(model),priorRoutes=clone(routes),priorDepth=maxHops;
+  mutator();
+  try{var next=analyze(model,maxHops);routes=next;lastDelta={label:label,changes:diffRoutes(priorRoutes,next)};demoMode=false;setNotice("");render();return true}
+  catch(err){model=priorModel;maxHops=priorDepth;routes=priorRoutes;render();setNotice(err.message||"The model could not be analyzed.");return false}
+}
+function validateModel(input){
+  if(!input||typeof input!=="object"||Array.isArray(input))throw Error("The file must contain a JSON object.");
+  if(!Array.isArray(input.nodes)||!Array.isArray(input.relationships))throw Error("The JSON object must include both nodes and relationships arrays.");
+  if(input.nodes.length>MAX_NODES)throw Error("A model can contain at most "+MAX_NODES+" elements.");
+  if(input.relationships.length>MAX_EDGES)throw Error("A model can contain at most "+MAX_EDGES+" relationships.");
+  var ids=new Set();
+  var nodes=input.nodes.map(function(n,index){
+    if(!n||typeof n!=="object"||Array.isArray(n))throw Error("Element "+(index+1)+" must be an object.");
+    if(typeof n.id!=="string"||!n.id.trim())throw Error("Element "+(index+1)+" needs a non-empty id.");
+    if(ids.has(n.id))throw Error("Duplicate element id: "+n.id+".");
+    ids.add(n.id);
+    if(typeof n.name!=="string"||!n.name.trim())throw Error("Element "+n.id+" needs a non-empty name.");
+    if(NODE_TYPES.indexOf(n.type)<0)throw Error("Element "+n.id+" has an unsupported kind. Use user, service, role, permission, or asset.");
+    if(typeof n.entry!=="boolean"||typeof n.sensitive!=="boolean")throw Error("Element "+n.id+" must set entry and sensitive to true or false.");
+    if(n.sensitive&&n.type!=="asset")throw Error("Only an asset can be marked sensitive: "+n.id+".");
+    return {id:n.id,name:n.name.trim(),type:n.type,entry:n.entry,sensitive:n.sensitive};
+  });
+  var edgeIds=new Set();
+  var relationships=input.relationships.map(function(e,index){
+    if(!e||typeof e!=="object"||Array.isArray(e))throw Error("Relationship "+(index+1)+" must be an object.");
+    if(typeof e.id!=="string"||!e.id.trim())throw Error("Relationship "+(index+1)+" needs a non-empty id.");
+    if(edgeIds.has(e.id))throw Error("Duplicate relationship id: "+e.id+".");
+    edgeIds.add(e.id);
+    if(typeof e.from!=="string"||!ids.has(e.from))throw Error("Relationship "+e.id+" refers to missing From element: "+String(e.from)+".");
+    if(typeof e.to!=="string"||!ids.has(e.to))throw Error("Relationship "+e.id+" refers to missing To element: "+String(e.to)+".");
+    if(typeof e.type!=="string"||!e.type.trim())throw Error("Relationship "+e.id+" needs a relationship type.");
+    if(e.explanation!==undefined&&typeof e.explanation!=="string")throw Error("Relationship "+e.id+" explanation must be text.");
+    return {id:e.id,from:e.from,to:e.to,type:e.type.trim(),explanation:e.explanation?e.explanation.trim():""};
+  });
+  return {nodes:nodes,relationships:relationships};
+}
+function makeTemplate(){return {nodes:[{id:"internet-user",name:"Internet user",type:"user",entry:true,sensitive:false},{id:"web-app",name:"Web application",type:"service",entry:false,sensitive:false},{id:"app-role",name:"Application role",type:"role",entry:false,sensitive:false},{id:"customer-db",name:"Customer database",type:"asset",entry:false,sensitive:true}],relationships:[{id:"r-01",from:"internet-user",to:"web-app",type:"authenticates to",explanation:"An outside user can sign in to the application."},{id:"r-02",from:"web-app",to:"app-role",type:"assumes role",explanation:"The application runs with this role."},{id:"r-03",from:"app-role",to:"customer-db",type:"can read",explanation:"The role can read the customer database."}]}}
+function download(name,text,mime){var blob=new Blob([text],{type:mime});var url=URL.createObjectURL(blob);var a=document.createElement("a");a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(url)},1000)}
+function refreshRouteDepth(){var select=$("maxHops");select.innerHTML="";for(var i=1;i<=12;i++){var option=document.createElement("option");option.value=i;option.textContent=i+" "+(i===1?"step":"steps");if(i===maxHops)option.selected=true;select.appendChild(option)}}
+function render(){
+  $("statNodes").textContent=model.nodes.length;$("statEdges").textContent=model.relationships.length;$("statEntries").textContent=model.nodes.filter(function(n){return n.entry}).length;$("statAssets").textContent=model.nodes.filter(function(n){return n.sensitive}).length;
+  $("modelBadge").textContent=demoMode?"DEMO MODEL":"CURRENT MODEL";
+  $("nodeCountLabel").textContent="("+model.nodes.length+")";$("edgeCountLabel").textContent="("+model.relationships.length+")";$("routeCount").textContent=routes.length;
+  var nodesById=new Map();model.nodes.forEach(function(n){nodesById.set(n.id,n)});
+  $("nodeList").innerHTML=model.nodes.length?model.nodes.map(function(n){return '<div class="node-row"><span class="node-icon '+esc(n.type)+'">'+esc(n.type.slice(0,1).toUpperCase())+'</span><div class="node-main"><div class="node-name" title="'+esc(n.name)+'">'+esc(n.name)+'</div><div class="node-meta">'+esc(TYPE_LABEL[n.type])+' · '+esc(n.id)+'</div></div><div class="node-flags">'+(n.entry?'<span class="tiny-flag">Entry</span>':'')+(n.sensitive?'<span class="tiny-flag sensitive">Sensitive</span>':'')+'</div><button class="icon-btn" data-action="entry" data-id="'+esc(n.id)+'" title="'+(n.entry?"Unmark":"Mark")+' entry point">'+(n.entry?"↗":"＋")+'</button>'+(n.type==="asset"?'<button class="icon-btn" data-action="sensitive" data-id="'+esc(n.id)+'" title="'+(n.sensitive?"Unmark":"Mark")+' sensitive asset">'+(n.sensitive?"◉":"○")+'</button>':'')+'<button class="icon-btn" data-action="delete-node" data-id="'+esc(n.id)+'" title="Remove element">×</button></div>'}).join(""):'<div class="empty">No elements yet. Add one above or import a JSON model.</div>';
+  var from=$("edgeFrom"),to=$("edgeTo"),oldFrom=from.value,oldTo=to.value;var opts='<option value="">Select element</option>'+model.nodes.map(function(n){return '<option value="'+esc(n.id)+'">'+esc(n.name)+' · '+esc(n.id)+'</option>'}).join("");from.innerHTML=opts;to.innerHTML=opts;if(nodesById.has(oldFrom))from.value=oldFrom;if(nodesById.has(oldTo))to.value=oldTo;
+  $("edgeList").innerHTML=model.relationships.length?model.relationships.map(function(e){var a=nodesById.get(e.from),b=nodesById.get(e.to);return '<div class="edge-row"><span class="edge-arrow">↳</span><div class="edge-main"><div class="edge-title">'+esc(a?a.name:e.from)+' <span style="color:#7187a3">→</span> '+esc(b?b.name:e.to)+'</div><div class="edge-meta">'+esc(e.type)+(e.explanation?' · '+esc(e.explanation):'')+'</div></div><button class="edge-delete" data-action="delete-edge" data-id="'+esc(e.id)+'" title="Remove relationship">×</button></div>'}).join(""):'<div class="empty">No relationships yet. Routes need explicit directed links.</div>';
+  $("routeList").innerHTML=routes.length?routes.map(function(r,i){return renderRoute(r,i+1)}).join(""):'<div class="no-routes"><div class="glyph">⌁</div><strong>No route found</strong><p>'+noRouteMessage()+'</p></div>';
+  renderDelta();renderSuggestions();
+}
+function noRouteMessage(){var entries=model.nodes.filter(function(n){return n.entry}).length,assets=model.nodes.filter(function(n){return n.sensitive}).length;if(!entries)return "Mark at least one element as an entry point to begin.";if(!assets)return "Mark an asset as sensitive to define a destination.";if(!model.relationships.length)return "Add directed relationships connecting an entry point to a sensitive asset.";return "No directed route connects a marked entry point to a sensitive asset within "+maxHops+" steps."}
+function renderRoute(route,index){
+  var steps=route.nodes.map(function(node,i){var cls=i===0?"entry":(i===route.nodes.length-1&&node.sensitive?"target":"");var label=i===0?"ENTRY":(i===route.nodes.length-1&&node.sensitive?"ASSET":TYPE_LABEL[node.type].toUpperCase());var title=i===0?"Entry point":(i===route.nodes.length-1&&node.sensitive?"Sensitive asset":TYPE_LABEL[node.type]);var html='<div class="route-step"><div class="step-node '+cls+'">'+(i+1)+'</div><div class="step-content"><div class="step-title">'+esc(node.name)+' <span style="font-size:9px;color:#71849d;font-weight:500">· '+esc(label)+'</span></div>';
+    if(i<route.edges.length){var edge=route.edges[i],next=route.nodes[i+1];var description=edge.explanation||node.name+" "+edge.type+" "+next.name+".";html+='<div class="step-detail"><b>'+esc(edge.type)+'</b> — '+esc(description)+'</div>'}
+    html+='</div></div>';return html}).join("");
+  return '<article class="route-card"><div class="route-card-head"><div><span class="route-index">ROUTE '+String(index).padStart(2,"0")+'</span><div class="route-name">'+esc(routeDescription(route))+'</div></div><span class="hop-pill">'+route.edges.length+' '+(route.edges.length===1?"step":"steps")+'</span></div><div class="route-flow">'+steps+'</div></article>'
+}
+function shortRoute(route){return routeDescription(route)+" ("+route.edges.length+" "+(route.edges.length===1?"step":"steps")+")"}
+function renderDelta(){
+  var slot=$("deltaSlot");if(!lastDelta){slot.innerHTML="";return}
+  var d=lastDelta.changes;
+  function group(label,items,klass){var content=items.length?'<ol class="delta-items">'+items.map(function(r){return '<li>'+esc(shortRoute(r))+'<div class="mini-path">'+esc(r.nodes.map(function(n){return n.name}).join(" → "))+'</div></li>'}).join("")+'</ol>':'<div class="mini-path" style="font-size:10px;margin-top:6px">None</div>';return '<details class="delta-group" '+(items.length&&items.length<=4?'open':'')+'><summary>'+label+' · '+items.length+'</summary>'+content+'</details>'}
+  slot.innerHTML='<div class="delta-box"><div class="delta-head"><div class="delta-title">Change comparison</div><div class="delta-label">'+esc(lastDelta.label)+'</div></div><div class="delta-counts"><span class="delta-count removed">− '+d.removed.length+' removed</span><span class="delta-count remain">= '+d.remaining.length+' remain</span><span class="delta-count new">＋ '+d.added.length+' new</span></div>'+group("Removed routes",d.removed,"removed")+group("Routes remaining",d.remaining,"remain")+group("New routes",d.added,"new")+'</div>'
+}
+function renderSuggestions(){
+  var host=$("suggestions");if(!routes.length){host.innerHTML='<div class="suggest-empty">No current routes to remediate. Add or import relationships, then analyze.</div>';return}
+  var impact=new Map();routes.forEach(function(r){var used=new Set(r.edges.map(function(e){return e.id}));used.forEach(function(id){impact.set(id,(impact.get(id)||0)+1)})});
+  var suggestions=model.relationships.filter(function(e){return impact.has(e.id)}).map(function(e){return {edge:e,count:impact.get(e.id)}}).sort(function(a,b){return b.count-a.count||a.edge.id.localeCompare(b.edge.id)});
+  var nodeMap=new Map();model.nodes.forEach(function(n){nodeMap.set(n.id,n)});
+  host.innerHTML=suggestions.length?suggestions.map(function(s){var a=nodeMap.get(s.edge.from),b=nodeMap.get(s.edge.to);return '<div class="suggestion"><div class="suggestion-top"><div class="suggestion-edge">'+esc(a?a.name:s.edge.from)+' → '+esc(b?b.name:s.edge.to)+'</div><span class="impact">'+s.count+' route'+(s.count===1?"":"s")+'</span></div><div class="suggestion-meta">Relationship: <b>'+esc(s.edge.type)+'</b> · '+esc(s.edge.id)+'</div><button class="btn-small" data-action="apply-suggestion" data-id="'+esc(s.edge.id)+'">Remove this relationship</button></div>'}).join(""):'<div class="suggest-empty">No existing relationship appears on a current route.</div>';
+}
+function renderFromAction(action,id){
+  var node=model.nodes.find(function(n){return n.id===id}),edge=model.relationships.find(function(e){return e.id===id});
+  if(action==="entry"&&node){transact(node.entry?"Unmark entry point":"Mark entry point",function(){node.entry=!node.entry});return}
+  if(action==="sensitive"&&node){transact(node.sensitive?"Unmark sensitive asset":"Mark sensitive asset",function(){node.sensitive=!node.sensitive});return}
+  if(action==="delete-edge"&&edge){transact("Remove relationship",function(){model.relationships=model.relationships.filter(function(e){return e.id!==id})});showToast("Relationship removed; routes recalculated.");return}
+  if(action==="delete-node"&&node){var attached=model.relationships.filter(function(e){return e.from===id||e.to===id}).length;if(!confirm('Remove "'+node.name+'" and '+attached+' connected relationship'+(attached===1?"":"s")+"?"))return;transact("Remove element and connected relationships",function(){model.nodes=model.nodes.filter(function(n){return n.id!==id});model.relationships=model.relationships.filter(function(e){return e.from!==id&&e.to!==id})});return}
+  if(action==="apply-suggestion"&&edge){transact("Suggested link removal",function(){model.relationships=model.relationships.filter(function(e){return e.id!==id})});showToast("Suggested relationship removed; routes recalculated.");}
+}
+function openFormat(){ $("formatModal").classList.add("open") }
+function closeFormat(){ $("formatModal").classList.remove("open") }
+function init(){
+  var hp=$("maxHops");for(var i=1;i<=12;i++){var o=document.createElement("option");o.value=i;o.textContent=i+" "+(i===1?"step":"steps");if(i===maxHops)o.selected=true;hp.appendChild(o)}
+  model={nodes:[],relationships:[]};routes=analyze(model,maxHops);render();
+  $("nodeType").addEventListener("change",function(){var isAsset=this.value==="asset";$("nodeSensitive").disabled=!isAsset;if(!isAsset)$("nodeSensitive").checked=false});
+  $("nodeForm").addEventListener("submit",function(ev){ev.preventDefault();var name=$("nodeName").value.trim(),type=$("nodeType").value,entry=$("nodeEntry").checked,sensitive=$("nodeSensitive").checked;if(!name)return;if(sensitive&&type!=="asset"){setNotice("Only an asset can be marked sensitive.");return}if(model.nodes.length>=MAX_NODES){setNotice("A model can contain at most "+MAX_NODES+" elements.");return}
+    transact("Add element",function(){model.nodes.push({id:uid(type),name:name,type:type,entry:entry,sensitive:sensitive})});if(!document.querySelector("#notice.show")){this.reset();$("nodeSensitive").disabled=false;showToast("Element added; routes recalculated.");}
+  });
+  $("edgeForm").addEventListener("submit",function(ev){ev.preventDefault();var from=$("edgeFrom").value,to=$("edgeTo").value,type=$("edgeType").value.trim(),explanation=$("edgeExplanation").value.trim();if(!from||!to||!type){setNotice("Choose both endpoints and enter a relationship type.");return}if(model.relationships.length>=MAX_EDGES){setNotice("A model can contain at most "+MAX_EDGES+" relationships.");return}if(!model.nodes.some(function(n){return n.id===from})||!model.nodes.some(function(n){return n.id===to})){setNotice("Both relationship endpoints must exist in the model.");return}
+    transact("Add relationship",function(){model.relationships.push({id:uid("r"),from:from,to:to,type:type,explanation:explanation})});if(!document.querySelector("#notice.show")){this.reset();render();showToast("Relationship added; routes recalculated.");}
+  });
+  $("nodeList").addEventListener("click",function(ev){var b=ev.target.closest("button[data-action]");if(b)renderFromAction(b.dataset.action,b.dataset.id)});
+  $("edgeList").addEventListener("click",function(ev){var b=ev.target.closest("button[data-action]");if(b)renderFromAction(b.dataset.action,b.dataset.id)});
+  $("suggestions").addEventListener("click",function(ev){var b=ev.target.closest("button[data-action]");if(b)renderFromAction(b.dataset.action,b.dataset.id)});
+  $("maxHops").addEventListener("change",function(){var value=Number(this.value),prior=maxHops;maxHops=value;try{var next=analyze(model,maxHops);lastDelta={label:"Maximum path length changed to "+maxHops,changes:diffRoutes(routes,next)};routes=next;setNotice("");render()}catch(err){maxHops=prior;this.value=prior;setNotice(err.message||"Could not analyze this model.")}});
+  $("analyzeBtn").addEventListener("click",function(){try{var before=routes.slice(),next=analyze(model,maxHops);routes=next;lastDelta={label:"Analysis refreshed",changes:diffRoutes(before,next)};setNotice("");render();showToast("Analysis refreshed.")}catch(err){setNotice(err.message||"Could not analyze this model.")}});
+  $("importBtn").addEventListener("click",function(){$("fileInput").click()});
+  $("fileInput").addEventListener("change",function(){var file=this.files&&this.files[0];if(!file)return;var reader=new FileReader();reader.onload=function(){try{var parsed=validateModel(JSON.parse(String(reader.result)));var priorModel=clone(model),priorRoutes=clone(routes);model=parsed;try{routes=analyze(model,maxHops)}catch(err){model=priorModel;routes=priorRoutes;throw err}lastDelta={label:"Imported model",changes:diffRoutes(priorRoutes,routes)};demoMode=false;setNotice("");render();showToast("Valid model imported; routes recalculated.")}catch(err){setNotice("Import rejected: "+(err.message||"invalid JSON"));}finally{$("fileInput").value=""}};reader.onerror=function(){setNotice("Import rejected: the file could not be read.");$("fileInput").value=""};reader.readAsText(file)});
+  $("exportBtn").addEventListener("click",function(){download("breachpath-model.json",JSON.stringify(model,null,2),"application/json");showToast("Model exported as JSON.")});
+  $("newModelBtn").addEventListener("click",function(){if(!confirm("Start a blank model? This replaces the current model."))return;transact("Started blank model",function(){model={nodes:[],relationships:[]}});demoMode=false;render();showToast("Blank model ready.")});
+  $("loadDemoBtn").addEventListener("click",function(){if(model.nodes.length&&!confirm("Replace the current model with the labeled demo model?"))return;transact("Loaded demo model",function(){model=clone(schemaModel)});demoMode=true;render();showToast("Demo model loaded; routes recalculated.")});
+  $("templateBtn").addEventListener("click",openFormat);$("closeModal").addEventListener("click",closeFormat);$("closeModal2").addEventListener("click",closeFormat);
+  $("formatModal").addEventListener("click",function(e){if(e.target===$("formatModal"))closeFormat()});
+  $("downloadTemplate").addEventListener("click",function(){download("breachpath-starter.json",JSON.stringify(makeTemplate(),null,2),"application/json");showToast("Starter JSON downloaded.")});
+  document.addEventListener("keydown",function(e){if(e.key==="Escape")closeFormat()});
+  $("schemaExample").textContent=JSON.stringify(makeTemplate(),null,2);
+}
+init();
+})();
+</script>
+</body>
+</html>
